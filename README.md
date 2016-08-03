@@ -11,6 +11,8 @@ stats produced by Artillery CLI to StatsD in real-time.
 
 `npm install artillery-plugin-statsd` otherwise.
 
+`npm install -g` to install from source.
+
 ### Use
 
 Enable the plugin by adding it in your test script's `config.plugins` section:
@@ -38,11 +40,15 @@ Enable the plugin by adding it in your test script's `config.plugins` section:
 - `scenariosCreated`
 - `scenariosCompleted`
 - `requestsCompleted`
+- `concurrency`
+- `rps.count`
+- `rps.mean`
 - `latency.min`
 - `latency.max`
 - `latency.median`
 - `latency.p95`
 - `latency.p99`
+- `codes.200`, `codes.404`, etc
 - `errors.ECONNREFUSED`, `errors.ETIMEDOUT` etc
 
 ### Using with Librato
