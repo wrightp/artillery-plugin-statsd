@@ -41,6 +41,7 @@ Enable the plugin by adding it in your test script's `config.plugins` section:
 - `scenariosCompleted`
 - `requestsCompleted`
 - `concurrency`
+- `pendingRequests`
 - `rps.count`
 - `rps.mean`
 - `latency.min`
@@ -48,8 +49,8 @@ Enable the plugin by adding it in your test script's `config.plugins` section:
 - `latency.median`
 - `latency.p95`
 - `latency.p99`
-- `codes.200`, `codes.404`, etc
-- `errors.ECONNREFUSED`, `errors.ETIMEDOUT` etc
+- `codes` - each code tagged as ``"code:<STATUS_CODE>"``
+- `errors` - each error tagged as ``"error:<ERROR_CODE>"``
 
 ### Using with Librato
 
