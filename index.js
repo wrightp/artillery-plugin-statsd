@@ -16,10 +16,14 @@ function StatsDPlugin(config, ee) {
   // This is used for testing the plugin interface
   var enableUselessReporting = config.plugins.statsd.enableUselessReporting;
 
-  var metrics = new StatsD(host, port, prefix);
+  var client = new StatsD(host, port, prefix);
+
+  client.socket.on('error', function(error) {
+    return console.error("Error in socket: ", error);
+  });
 
   ee.on('phaseStarted', function(stats) {
-    debug(`host: ${metrics.host} port: ${metrics.port} prefix: ${metrics.prefix}`);
+    debug(`host: ${client.host} port: ${client.port} prefix: ${client.prefix}`);
   });
 
   ee.on('stats', function(stats) {
@@ -29,32 +33,32 @@ function StatsDPlugin(config, ee) {
       self._report.push({ timestamp: stats.timestamp, value: 'test' });
     }
 
-    metrics.gauge('.scenariosCreated', stats.scenariosCreated);
-    metrics.gauge('.scenariosCompleted', stats.scenariosCompleted);
-    metrics.gauge('.requestsCompleted', stats.requestsCompleted);
-    metrics.gauge('.concurrency', stats.concurrency || -1);
-    metrics.gauge('.pendingRequests', stats.pendingRequests || -1);
+    client.gauge('.scenariosCreated', stats.scenariosCreated);
+    client.gauge('.scenariosCompleted', stats.scenariosCompleted);
+    client.gauge('.requestsCompleted', stats.requestsCompleted);
+    client.gauge('.concurrency', stats.concurrency);
+    client.gauge('.pendingRequests', stats.pendingRequests);
 
-    metrics.gauge('.rps.count', stats.rps.count || -1);
-    metrics.gauge('.rps.mean', stats.rps.mean || -1);
+    client.gauge('.rps.count', stats.rps.count);
+    client.gauge('.rps.mean', stats.rps.mean);
 
-    metrics.gauge('.latency.min', stats.latency.min || -1);
-    metrics.gauge('.latency.max', stats.latency.max || -1);
-    metrics.gauge('.latency.median', stats.latency.median || -1);
-    metrics.gauge('.latency.p95', stats.latency.p95 || -1);
-    metrics.gauge('.latency.p99', stats.latency.p99 || -1);
+    client.gauge('.latency.min', stats.latency.min);
+    client.gauge('.latency.max', stats.latency.max);
+    client.gauge('.latency.median', stats.latency.median);
+    client.gauge('.latency.p95', stats.latency.p95);
+    client.gauge('.latency.p99', stats.latency.p99);
 
     l.each(stats.codes, function(count, errName) {
-      metrics.gauge('.codes', count, [`code:${errName}`]);
+      client.gauge('.codes', count, [`code:${errName}`]);
     });
 
     l.each(stats.errors, function(count, errName) {
-      metrics.gauge('.errors', count, [`error:${errName}`]);
+      client.gauge('.errors', count, [`error:${errName}`]);
     });
   });
 
   ee.on('done', function(stats) {
-    metrics.close();
+    client.close();
     debug('done');
   });
 

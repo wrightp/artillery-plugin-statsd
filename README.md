@@ -11,8 +11,6 @@ stats produced by Artillery CLI to StatsD in real-time.
 
 `npm install artillery-plugin-statsd` otherwise.
 
-`npm install -g` to install from source.
-
 ### Use
 
 Enable the plugin by adding it in your test script's `config.plugins` section:
@@ -34,6 +32,9 @@ Enable the plugin by adding it in your test script's `config.plugins` section:
 ```
 
 `host`, `port`, and `prefix` are optional; the values above are the defaults.
+
+### Debug
+Set `DEBUG=plugins:statsd` to display plugin debug output  
 
 ### Published metrics
 
