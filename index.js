@@ -1,6 +1,6 @@
 'use strict';
 
-var Lynx = require('lynx');
+var StatsD = require('node-statsd')
 var l = require('lodash');
 var debug = require('debug')('plugins:statsd');
 
@@ -12,45 +12,50 @@ function StatsDPlugin(config, ee) {
 
   var host = config.plugins.statsd.host || 'localhost';
   var port = config.plugins.statsd.port || 8125;
-  var prefix = config.plugins.statsd.prefix || 'minigun';
+  var prefix = config.plugins.statsd.prefix || 'artillery.';
   // This is used for testing the plugin interface
   var enableUselessReporting = config.plugins.statsd.enableUselessReporting;
 
-  var metrics = new Lynx(host, port);
+  var metrics = new StatsD(host, port, prefix);
+
+  ee.on('phaseStarted', function(stats) {
+    debug(`host: ${metrics.host} port: ${metrics.port} prefix: ${metrics.prefix}`);
+  });
 
   ee.on('stats', function(stats) {
-    debug('stats');
+    debug(stats);
 
     if (enableUselessReporting) {
       self._report.push({ timestamp: stats.timestamp, value: 'test' });
     }
 
-    metrics.gauge(prefix + '.scenariosCreated', stats.scenariosCreated);
-    metrics.gauge(prefix + '.scenariosCompleted', stats.scenariosCompleted);
-    metrics.gauge(prefix + '.requestsCompleted', stats.requestsCompleted);
-    metrics.gauge(prefix + '.concurrency', stats.concurrency || -1);
+    metrics.gauge('scenariosCreated', stats.scenariosCreated);
+    metrics.gauge('scenariosCompleted', stats.scenariosCompleted);
+    metrics.gauge('requestsCompleted', stats.requestsCompleted);
+    metrics.gauge('concurrency', stats.concurrency || -1);
+    metrics.gauge('pendingRequests', stats.pendingRequests || -1);
 
-    metrics.gauge(prefix + '.rps.count', stats.rps.count || -1);
-    metrics.gauge(prefix + '.rps.mean', stats.rps.mean || -1);
+    metrics.gauge('rps.count', stats.rps.count || -1);
+    metrics.gauge('rps.mean', stats.rps.mean || -1);
 
-    metrics.gauge(prefix + '.latency.min', stats.latency.min || -1);
-    metrics.gauge(prefix + '.latency.max', stats.latency.max || -1);
-    metrics.gauge(prefix + '.latency.median', stats.latency.median || -1);
-    metrics.gauge(prefix + '.latency.p95', stats.latency.p95 || -1);
-    metrics.gauge(prefix + '.latency.p99', stats.latency.p99 || -1);
+    metrics.gauge('latency.min', stats.latency.min || -1);
+    metrics.gauge('latency.max', stats.latency.max || -1);
+    metrics.gauge('latency.median', stats.latency.median || -1);
+    metrics.gauge('latency.p95', stats.latency.p95 || -1);
+    metrics.gauge('latency.p99', stats.latency.p99 || -1);
 
     l.each(stats.codes, function(count, errName) {
-      metrics.gauge(prefix + '.codes.' + errName, count);
+      metrics.gauge('codes', count, [`code:${errName}`]);
     });
 
     l.each(stats.errors, function(count, errName) {
-      metrics.gauge(prefix + '.errors.' + errName, count);
+      metrics.gauge('errors', count, [`error:${errName}`]);
     });
   });
 
   ee.on('done', function(stats) {
-    debug('done');
     metrics.close();
+    debug('done');
   });
 
   return this;
