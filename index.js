@@ -38,21 +38,21 @@ function StatsDPlugin(config, ee) {
     client.gauge('.requestsCompleted', stats.requestsCompleted);
     client.gauge('.concurrency', stats.concurrency);
     client.gauge('.pendingRequests', stats.pendingRequests);
-
     client.gauge('.rps.count', stats.rps.count);
     client.gauge('.rps.mean', stats.rps.mean);
-
-    client.gauge('.latency.min', stats.latency.min);
-    client.gauge('.latency.max', stats.latency.max);
-    client.gauge('.latency.median', stats.latency.median);
-    client.gauge('.latency.p95', stats.latency.p95);
-    client.gauge('.latency.p99', stats.latency.p99);
+    client.gauge('.latency.min', stats.latency.min || -1);
+    client.gauge('.latency.max', stats.latency.max || -1);
+    client.gauge('.latency.median', stats.latency.median || -1);
+    client.gauge('.latency.p95', stats.latency.p95 || -1);
+    client.gauge('.latency.p99', stats.latency.p99 || -1);
 
     l.each(stats.codes, function(count, errName) {
+      client.gauge(`.codes.${errName}`, count);
       client.gauge('.codes', count, [`code:${errName}`]);
     });
 
     l.each(stats.errors, function(count, errName) {
+      client.gauge(`.errors.${errName}`, count);
       client.gauge('.errors', count, [`error:${errName}`]);
     });
   });
