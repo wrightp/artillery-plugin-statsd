@@ -18,10 +18,6 @@ function StatsDPlugin(config, ee) {
 
   var client = new StatsD(host, port, prefix);
 
-  client.socket.on('error', function(error) {
-    return console.error("Error in socket: ", error);
-  });
-
   ee.on('phaseStarted', function(stats) {
     debug(`host: ${client.host} port: ${client.port} prefix: ${client.prefix}`);
   });
